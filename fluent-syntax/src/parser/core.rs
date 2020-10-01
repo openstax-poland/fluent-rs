@@ -232,6 +232,10 @@ where
             ast::VariantKey::NumberLiteral {
                 value: self.get_number_literal()?,
             }
+        } else if self.is_current_byte(b'"') {
+            ast::VariantKey::String {
+                value: self.get_string_literal()?,
+            }
         } else {
             ast::VariantKey::Identifier {
                 name: self.get_identifier()?.name,
