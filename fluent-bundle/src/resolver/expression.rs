@@ -31,6 +31,7 @@ impl<'bundle> WriteValue<'bundle> for ast::Expression<&'bundle str> {
                         for variant in variants {
                             let key = match variant.key {
                                 ast::VariantKey::Identifier { name } => name.into(),
+                                ast::VariantKey::String { value } => value.into(),
                                 ast::VariantKey::NumberLiteral { value } => {
                                     FluentValue::try_number(value)
                                 }

@@ -53,6 +53,21 @@ suites:
                 value: B
                 args:
                   selector: c
+          -
+            name: non-identifier selector
+            resources:
+              -
+                source: |-
+                  select = {$selector ->
+                      ["non identifier"] A
+                     *[b] B
+                  }
+            asserts:
+              -
+                id: select
+                value: A
+                args:
+                  selector: non identifier
       -
         name: number selectors
         tests:

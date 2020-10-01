@@ -8,6 +8,11 @@ identifier-surrounded-by-whitespace =
        *[     key     ] value
     }
 
+non-identifier-string =
+    { $sel ->
+       *[  " not an identifier "  ] value
+    }
+
 int-number =
     { $sel ->
        *[1] value

@@ -322,6 +322,11 @@ impl Serializer {
             VariantKey::NumberLiteral { value } | VariantKey::Identifier { name: value } => {
                 self.writer.write_literal(value.as_ref())
             }
+            VariantKey::String { value } => {
+                self.writer.write_literal("\"");
+                self.writer.write_literal(value.as_ref());
+                self.writer.write_literal("\"");
+            }
         }
     }
 
