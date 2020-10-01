@@ -69,37 +69,7 @@ where
     ) -> Result<ast::InlineExpression<S>> {
         match get_current_byte!(self) {
             Some(b'"') => {
-                self.ptr += 1; // "
-                let start = self.ptr;
-                while let Some(b) = get_current_byte!(self) {
-                    match b {
-                        b'\\' => match get_byte!(self, self.ptr + 1) {
-                            Some(b'\\') | Some(b'{') | Some(b'"') => self.ptr += 2,
-                            Some(b'u') => {
-                                self.ptr += 2;
-                                self.skip_unicode_escape_sequence(4)?;
-                            }
-                            Some(b'U') => {
-                                self.ptr += 2;
-                                self.skip_unicode_escape_sequence(6)?;
-                            }
-                            b => {
-                                let seq = b.unwrap_or(&b' ').to_string();
-                                return error!(ErrorKind::UnknownEscapeSequence(seq), self.ptr);
-                            }
-                        },
-                        b'"' => {
-                            break;
-                        }
-                        b'\n' => {
-                            return error!(ErrorKind::UnterminatedStringLiteral, self.ptr);
-                        }
-                        _ => self.ptr += 1,
-                    }
-                }
-
-                self.expect_byte(b'"')?;
-                let slice = self.source.slice(start..self.ptr - 1);
+                let slice = self.get_string_literal()?;
                 Ok(ast::InlineExpression::StringLiteral { value: slice })
             }
             Some(b) if b.is_ascii_digit() => {
@@ -154,6 +124,40 @@ where
             _ if only_literal => error!(ErrorKind::ExpectedLiteral, self.ptr),
             _ => error!(ErrorKind::ExpectedInlineExpression, self.ptr),
         }
+    }
+
+    pub(super) fn get_string_literal(&mut self) -> Result<S> {
+        self.ptr += 1; // "
+        let start = self.ptr;
+        while let Some(b) = get_current_byte!(self) {
+            match b {
+                b'\\' => match get_byte!(self, self.ptr + 1) {
+                    Some(b'\\') | Some(b'{') | Some(b'"') => self.ptr += 2,
+                    Some(b'u') => {
+                        self.ptr += 2;
+                        self.skip_unicode_escape_sequence(4)?;
+                    }
+                    Some(b'U') => {
+                        self.ptr += 2;
+                        self.skip_unicode_escape_sequence(6)?;
+                    }
+                    b => {
+                        let seq = b.unwrap_or(&b' ').to_string();
+                        return error!(ErrorKind::UnknownEscapeSequence(seq), self.ptr);
+                    }
+                },
+                b'"' => {
+                    break;
+                }
+                b'\n' => {
+                    return error!(ErrorKind::UnterminatedStringLiteral, self.ptr);
+                }
+                _ => self.ptr += 1,
+            }
+        }
+
+        self.expect_byte(b'"')?;
+        Ok(self.source.slice(start..self.ptr - 1))
     }
 
     pub fn get_call_arguments(&mut self) -> Result<Option<ast::CallArguments<S>>> {

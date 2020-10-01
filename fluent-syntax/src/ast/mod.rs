@@ -757,6 +757,7 @@ pub struct Variant<S> {
 #[cfg_attr(feature = "serde", serde(tag = "type"))]
 pub enum VariantKey<S> {
     Identifier { name: S },
+    String { value: S },
     NumberLiteral { value: S },
 }
 
